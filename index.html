@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Sistema profissional de controle de estoque com todas as funcionalidades ativadas."
+    />
+    <title>EstoqueMaster • Controle de Material</title>
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>"
+    />
+
+    <!-- Font Awesome 4 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <!-- Link para o CSS Externo -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- SIDEBAR -->
+      <aside id="sidebar">
+        <div class="logo">
+          <a href="#" data-target="dashboard" class="logo-link">
+            <h1>Estoque<span class="danger">Master</span></h1>
+          </a>
+        </div>
+        <nav class="nav-menu">
+          <a href="#" class="nav-item active" data-target="dashboard">
+            <i class="fa fa-dashboard" aria-hidden="true"></i>
+            <span>Dashboard</span>
+          </a>
+          <div class="nav-header collapsible" data-target="material-submenu">
+            <i class="fa fa-archive" aria-hidden="true"></i>
+            <span>Material</span>
+            <i class="fa fa-chevron-down arrow rotate" aria-hidden="true"></i>
+          </div>
+          <ul class="submenu open" id="material-submenu">
+            <li>
+              <a href="#" class="nav-item" data-target="search-material"
+                >Pesquisa de Material</a
+              >
+            </li>
+            <li>
+              <a href="#" class="nav-item" data-target="stock-search"
+                >Pesquisa de Estoque</a
+              >
+            </li>
+            <li>
+              <a href="#" class="nav-item" data-target="stock-movement"
+                >Movimentação de Estoque</a
+              >
+            </li>
+            <li>
+              <a href="#" class="nav-item" data-target="movement-search"
+                >Pesquisa de Movimentação</a
+              >
+            </li>
+            <li>
+              <a href="#" class="nav-item" data-target="material-reports"
+                >Relatórios de Material</a
+              >
+            </li>
+            <li>
+              <a href="#" class="nav-item" data-target="add-material"
+                >Cadastro de Material</a
+              >
+            </li>
+          </ul>
+          <div class="nav-header collapsible" data-target="reports-submenu">
+            <i class="fa fa-file-text-o" aria-hidden="true"></i>
+            <span>Relatórios</span>
+            <i class="fa fa-chevron-down arrow" aria-hidden="true"></i>
+          </div>
+          <ul class="submenu" id="reports-submenu">
+            <li>
+              <a href="#" class="nav-item" data-target="material-reports"
+                >Relatórios de Material</a
+              >
+            </li>
+          </ul>
+          <a href="#" class="nav-item" data-target="settings">
+            <i class="fa fa-cog" aria-hidden="true"></i>
+            <span>Configurações</span>
+          </a>
+          <a href="#" class="nav-item" id="logout-btn">
+            <i class="fa fa-sign-out" aria-hidden="true"></i>
+            <span>Sair</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- CONTEÚDO PRINCIPAL -->
+      <main>
+        <div class="top-bar">
+          <i
+            class="fa fa-bars menu-toggle"
+            id="menu-toggle"
+            aria-hidden="true"
+          ></i>
+          <div class="theme-toggle" id="theme-toggle" role="radiogroup">
+            <button id="btn-theme-light" class="active" aria-label="Modo claro">
+              <i class="fa fa-sun-o" aria-hidden="true"></i>
+            </button>
+            <button id="btn-theme-dark" aria-label="Modo escuro">
+              <i class="fa fa-moon-o" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="content-section fade-in">
+          <h2 class="section-title">Dashboard</h2>
+          <div class="stats-grid">
+            <div class="card stat-card">
+              <div class="stat-icon stat-primary">
+                <i class="fa fa-archive"></i>
+              </div>
+              <div class="stat-content">
+                <h3>Total de Itens</h3>
+                <div class="value" id="total-items">0</div>
+              </div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-icon stat-success">
+                <i class="fa fa-exclamation-triangle"></i>
+              </div>
+              <div class="stat-content">
+                <h3>Abaixo do Mínimo</h3>
+                <div class="value" id="low-stock">0</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom: 1rem; font-weight: 600">
+              Materiais Recentes
+            </h3>
+            <div id="recent-materials-container" class="table-container"></div>
+          </div>
+        </section>
+
+        <!-- CADASTRO -->
+        <section
+          id="add-material"
+          class="content-section"
+          style="display: none"
+        >
+          <h2 class="section-title">Cadastro de Material</h2>
+          <div class="card">
+            <form id="material-form">
+              <input type="hidden" id="material-id" />
+
+              <!-- Image Upload -->
+              <div class="image-upload-container">
+                <div id="form-image-preview" class="img-preview">
+                  <i class="fa fa-image fa-2x"></i>
+                </div>
+                <div>
+                  <label
+                    for="material-image"
+                    style="cursor: pointer; color: var(--color-primary)"
+                    >Escolher Imagem</label
+                  >
+                  <input
+                    type="file"
+                    id="material-image"
+                    accept="image/*"
+                    style="display: none"
+                  />
+                  <small style="color: var(--color-text-muted); display: block"
+                    >Max 200KB (redimensionado auto)</small
+                  >
+                </div>
+              </div>
+
+              <div class="form-group form-group-full">
+                <label for="material-name">Nome do Material</label>
+                <input type="text" id="material-name" required />
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="material-sku">CÓDIGO ALMOXARIFADO</label>
+                  <input type="text" id="material-sku" required />
+                  <small
+                    id="sku-feedback"
+                    style="
+                      display: none;
+                      color: var(--color-danger);
+                      font-weight: 500;
+                    "
+                    >Este código já existe!</small
+                  >
+                </div>
+                <div class="form-group">
+                  <label for="material-category">Categoria</label>
+                  <select id="material-category" required>
+                    <option value="">Selecione</option>
+                    <!-- Populated by JS -->
+                  </select>
+                </div>
+              </div>
+              <div class="form-grid-4">
+                <div class="form-group">
+                  <label for="material-quantity">Qtd. Atual</label>
+                  <input
+                    type="number"
+                    id="material-quantity"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="material-min-quantity">Qtd. Mínima</label>
+                  <input
+                    type="number"
+                    id="material-min-quantity"
+                    min="0"
+                    value="0"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="material-resupply-quantity"
+                    >Qtd. Ressuprimento</label
+                  >
+                  <input
+                    type="number"
+                    id="material-resupply-quantity"
+                    min="0"
+                    value="0"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="material-alert-percentage">% Alerta</label>
+                  <input
+                    type="number"
+                    id="material-alert-percentage"
+                    min="0"
+                    max="100"
+                    value="40"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="form-group form-group-full">
+                <label for="material-description">Descrição</label>
+                <textarea id="material-description" rows="3"></textarea>
+              </div>
+              <div
+                class="form-group-full"
+                style="display: flex; gap: 0.75rem; margin-top: 1rem"
+              >
+                <button type="submit" class="btn btn-primary">
+                  Salvar Material
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  id="form-cancel"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- PESQUISA MATERIAL -->
+        <section
+          id="search-material"
+          class="content-section"
+          style="display: none"
+        >
+          <h2 class="section-title">Pesquisa de Material</h2>
+          <div class="card">
+            <div
+              style="
+                display: flex;
+                justify-content: flex-end;
+                margin-bottom: 1rem;
+              "
+            >
+              <button class="btn btn-secondary" id="btn-export-search">
+                <i class="fa fa-file-excel-o"></i> Exportar Lista
+              </button>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="search-category-filter"
+                  >Filtrar por Categoria</label
+                >
+                <select id="search-category-filter">
+                  <option value="all">Todas as Categorias</option>
+                  <!-- Populated by JS -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="search-material-input">Buscar</label>
+                <input
+                  type="text"
+                  id="search-material-input"
+                  placeholder="Nome ou Código..."
+                />
+              </div>
+            </div>
+            <div class="form-group form-group-full">
+              <label
+                style="
+                  font-weight: 500;
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                "
+              >
+                <input
+                  type="checkbox"
+                  id="search-show-archived"
+                  style="width: auto"
+                />
+                Mostrar itens arquivados
+              </label>
+            </div>
+            <div
+              id="search-material-results-container"
+              class="table-container"
+            ></div>
+          </div>
+        </section>
+
+        <!-- ESTOQUE -->
+        <section
+          id="stock-search"
+          class="content-section"
+          style="display: none"
+        >
+          <h2 class="section-title">Pesquisa de Estoque</h2>
+          <div class="card">
+            <div class="form-group">
+              <label for="stock-status-filter">Filtrar por Status</label>
+              <select id="stock-status-filter">
+                <option value="all">Mostrar Todos</option>
+                <option value="attention">
+                  Requer Atenção (Ressuprimento)
+                </option>
+                <option value="critical">
+                  Estoque Crítico (Abaixo do Mínimo)
+                </option>
+                <option value="out">Sem Estoque</option>
+              </select>
+            </div>
+            <div
+              id="stock-search-results-container"
+              class="table-container"
+            ></div>
+          </div>
+        </section>
+
+        <!-- MOVIMENTAÇÃO -->
+        <section
+          id="stock-movement"
+          class="content-section"
+          style="display: none"
+        >
+          <h2 class="section-title">Movimentação de Estoque</h2>
+          <div class="card">
+            <form id="movement-form">
+              <div class="form-group">
+                <label for="movement-sku-input">CÓDIGO ALMOXARIFADO</label>
+                <input
+                  type="text"
+                  id="movement-sku-input"
+                  placeholder="Digite o código..."
+                  required
+                />
+                <p id="movement-material-name" class="neutral">
+                  Digite o código do material.
+                </p>
+              </div>
+              <div class="form-group">
+                <label for="movement-custom-date">Data da Movimentação</label>
+                <input type="date" id="movement-custom-date" required />
+              </div>
+
+              <div class="form-group">
+                <label>Tipo de Movimentação</label>
+                <div style="display: flex; gap: 1rem; margin-top: 0.5rem">
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 0.5rem;
+                      font-weight: 500;
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="movement-type"
+                      value="entrada"
+                      required
+                      style="width: auto"
+                    />
+                    Entrada
+                  </label>
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 0.5rem;
+                      font-weight: 500;
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="movement-type"
+                      value="saida"
+                      required
+                      style="width: auto"
+                    />
+                    Saída
+                  </label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="movement-quantity">Quantidade</label>
+                <input type="number" id="movement-quantity" min="1" required />
+              </div>
+              <div class="form-group">
+                <label for="movement-reason">Motivo</label>
+                <textarea
+                  id="movement-reason"
+                  rows="2"
+                  placeholder="Ex: Compra, Manutenção..."
+                  required
+                ></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Registrar Movimentação
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- PESQUISA MOVIMENTAÇÃO -->
+        <section
+          id="movement-search"
+          class="content-section"
+          style="display: none"
+        >
+          <h2 class="section-title">Pesquisa de Movimentação</h2>
+          <div class="card">
+            <div
+              style="
+                display: flex;
+                justify-content: flex-end;
+                margin-bottom: 1rem;
+              "
+            >
+              <button
+                class="btn btn-secondary btn-sm"
+                id="btn-export-movements"
+              >
+                <i class="fa fa-file-excel-o"></i> Exportar Histórico
+              </button>
+            </div>
+            <div class="form-group">
+              <label for="movement-search-date">Filtrar por data</label>
+              <input type="date" id="movement-search-date" />
+            </div>
+            <div
+              id="movement-search-results-container"
+              class="table-container"
+            ></div>
+          </div>
+        </section>
+
+        <!-- RELATÓRIOS -->
+        <section
+          id="material-reports"
+          class="content-section"
+          style="display: none"
+        >
+          <h2 class="section-title">Relatórios de Material</h2>
+          <div class="stats-grid">
+            <div class="card stat-card">
+              <div class="stat-icon stat-primary">
+                <i class="fa fa-archive"></i>
+              </div>
+              <div class="stat-content">
+                <h3>Total de Materiais</h3>
+                <div class="value" id="report-total-materials">0</div>
+              </div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-icon stat-danger">
+                <i class="fa fa-arrow-down"></i>
+              </div>
+              <div class="stat-content">
+                <h3>Itens sem Estoque</h3>
+                <div class="value" id="report-out-of-stock">0</div>
+              </div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-icon stat-success">
+                <i class="fa fa-arrow-up"></i>
+              </div>
+              <div class="stat-content">
+                <h3>Itens com Estoque Alto</h3>
+                <div class="value" id="report-high-stock">0</div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 1.5rem">
+            <h3 style="margin-bottom: 0.5rem">Itens por Categoria</h3>
+            <div id="category-chart-container" class="chart-container"></div>
+          </div>
+          <div class="card" style="margin-top: 1.5rem">
+            <h3 style="margin-bottom: 1rem">
+              Top 3 Materiais Mais Movimentados
+            </h3>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Material</th>
+                    <th>Total Movimentado</th>
+                  </tr>
+                </thead>
+                <tbody id="top-movements-report"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- CONFIGURAÇÕES -->
+        <section id="settings" class="content-section" style="display: none">
+          <h2 class="section-title">Configurações</h2>
+
+          <div class="card" style="margin-bottom: 1.5rem">
+            <h3>Gerir Categorias</h3>
+            <p
+              style="
+                margin-top: 0.5rem;
+                margin-bottom: 1rem;
+                color: var(--color-text-muted);
+              "
+            >
+              Adicione ou remova categorias do sistema.
+            </p>
+            <div class="category-list" id="settings-category-list">
+              <!-- Filled by JS -->
+            </div>
+            <div style="display: flex; gap: 0.5rem">
+              <input
+                type="text"
+                id="new-category-input"
+                placeholder="Nova categoria..."
+                style="max-width: 200px"
+              />
+              <button class="btn btn-primary" id="add-category-btn">
+                Adicionar
+              </button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom: 1.5rem">
+            <h3>Importar & Exportar Backup (JSON)</h3>
+            <p
+              style="
+                margin-top: 0.5rem;
+                margin-bottom: 1.25rem;
+                color: var(--color-text-muted);
+              "
+            >
+              Exporte um backup completo ou importe um arquivo .json.
+            </p>
+            <div style="display: flex; gap: 1rem; align-items: center">
+              <button class="btn btn-primary" id="export-data-btn">
+                <i class="fa fa-download"></i> Exportar Backup
+              </button>
+              <input
+                type="file"
+                id="import-file-input"
+                accept=".json"
+                style="display: none"
+              />
+              <label
+                for="import-file-input"
+                class="btn btn-secondary"
+                style="display: flex; align-items: center; cursor: pointer"
+              >
+                <i class="fa fa-upload"></i> Importar Backup
+              </label>
+            </div>
+            <p
+              style="
+                margin-top: 1rem;
+                font-size: 0.875rem;
+                color: var(--color-warning);
+              "
+            >
+              <strong>Atenção:</strong> A importação substituirá todos os dados.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Redefinir Dados</h3>
+            <p
+              style="
+                margin-top: 0.5rem;
+                margin-bottom: 1.25rem;
+                color: var(--color-text-muted);
+              "
+            >
+              Apagar todos os dados e restaurar o exemplo original.
+            </p>
+            <button class="btn btn-danger" id="reset-data-btn">
+              Redefinir Dados Agora
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <!-- MODAIS -->
+      <div id="confirm-modal" class="modal" style="display: none">
+        <div class="modal-overlay"></div>
+        <div class="modal-content" style="max-width: 400px">
+          <div class="modal-header">
+            <h3 id="confirm-modal-title">Confirmação</h3>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p
+              id="confirm-modal-message"
+              style="
+                display: block;
+                text-align: center;
+                margin: 1rem 0;
+                font-size: 1.1rem;
+              "
+            >
+              Tem certeza?
+            </p>
+          </div>
+          <div class="modal-footer" style="justify-content: center">
+            <button class="btn btn-secondary" id="confirm-modal-btn-cancel">
+              Cancelar
+            </button>
+            <button class="btn btn-primary" id="confirm-modal-btn-confirm">
+              Confirmar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="material-modal" class="modal" style="display: none">
+        <div class="modal-overlay" data-close></div>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Detalhes do Material</h3>
+            <button class="modal-close" data-close>&times;</button>
+          </div>
+          <div class="modal-body" id="modal-body"></div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" id="print-modal">Imprimir</button>
+            <div style="display: flex; gap: 0.5rem">
+              <button class="btn btn-secondary" id="edit-material">
+                Editar
+              </button>
+              <button class="btn btn-danger" id="archive-material">
+                Arquivar
+              </button>
+              <button
+                class="btn btn-success"
+                id="unarchive-material"
+                style="display: none"
+              >
+                Restaurar
+              </button>
+              <button class="btn btn-secondary" data-close>Fechar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <!-- Link para o JavaScript Externo -->
+    <script src="script.js"></script>
+  </body>
+</html>
