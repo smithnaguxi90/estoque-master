@@ -1,32 +1,47 @@
+from flask import Flask, render_template, request, redirect
 import mysql.connector
 
-# 1. Configuração da conexão
-conexao = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="Smith1990@",  # <--- COLOQUE SUA SENHA AQUI
-    database="sistema_estoque"
-)
+app = Flask(__name__)
 
-cursor = conexao.cursor()
+# Configuração do Banco (Coloque sua senha)
+def get_db_connection():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="sua_senha", 
+        database="sistema_estoque"
+    )
 
-# 2. Executar um comando SQL (Ler dados)
-comando = "SELECT * FROM produtos"
-cursor.execute(comando)
+# ROTA 1: Página Inicial (Mostra os produtos)
+@app.route('/')
+def index():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # Busca todos os produtos
+    cursor.execute("SELECT * FROM produtos")
+    meus_produtos = cursor.fetchall()
+    conn.close()
+    # Envia os dados para o HTML
+    return render_template('index.html', lista_produtos=meus_produtos)
 
-# 3. Pegar e mostrar os resultados
-resultados = cursor.fetchall() # Pega todas as linhas
+# ROTA 2: Cadastrar (Recebe o formulário)
+@app.route('/adicionar', methods=['POST'])
+def adicionar():
+    # Pega o que o usuário digitou no site
+    nome = request.form['nome']
+    preco = request.form['preco']
+    quantidade = request.form['quantidade']
 
-print(f"{'ID':<5} {'Produto':<30} {'Preço':<10}")
-print("-" * 50)
+    # Salva no MySQL
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    sql = "INSERT INTO produtos (nome, preco_venda, quantidade) VALUES (%s, %s, %s)"
+    cursor.execute(sql, (nome, preco, quantidade))
+    conn.commit()
+    conn.close()
 
-for produto in resultados:
-    # produto é uma tupla: (id, nome, descricao, qtd, custo, venda, data)
-    id_prod = produto[0]
-    nome = produto[1]
-    preco = produto[5]
-    print(f"{id_prod:<5} {nome:<30} R$ {preco:<10}")
+    # Recarrega a página inicial
+    return redirect('/')
 
-# 4. Fechar conexão
-cursor.close()
-conexao.close()
+if __name__ == '__main__':
+    app.run(debug=True)
