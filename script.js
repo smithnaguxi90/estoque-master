@@ -117,7 +117,6 @@ const renderCurrentSection = () => {
   if (state.currentSection === "material-reports") renderReports();
   if (state.currentSection === "settings") renderSettings();
 
-  // Sempre atualiza selects
   renderCategorySelects();
 };
 
@@ -317,7 +316,7 @@ const renderReports = () => {
   ).length;
   $("#report-high-stock").textContent = active.filter(
     (m) => m.quantity > 50
-  ).length; // Exemplo > 50
+  ).length;
 
   // Gráfico Categorias
   const counts = {};
@@ -507,6 +506,33 @@ window.deleteCategory = async (id) => {
   }
 };
 
+// Modal Genérico
+const showConfirm = (title, message, options = {}) => {
+  return new Promise((resolve) => {
+    const modal = $("#confirm-modal");
+    $("#confirm-modal-title").textContent = title || "Confirmação";
+    $("#confirm-modal-message").textContent = message || "Tem certeza?";
+    const btnConfirm = $("#confirm-modal-btn-confirm");
+    const btnCancel = $("#confirm-modal-btn-cancel");
+
+    const cleanup = () => {
+      modal.style.display = "none";
+      btnConfirm.onclick = null;
+      btnCancel.onclick = null;
+    };
+
+    modal.style.display = "flex";
+    btnConfirm.onclick = () => {
+      resolve(true);
+      cleanup();
+    };
+    btnCancel.onclick = () => {
+      resolve(false);
+      cleanup();
+    };
+  });
+};
+
 // --- MODAL LÓGICA ---
 const openModal = (m) => {
   const badge = getStatusBadge(m);
@@ -576,7 +602,7 @@ const loadEditForm = (m) => {
   navigateTo("add-material");
 };
 
-// --- NAVEGAÇÃO ---
+// --- NAVEGAÇÃO E SIDEBAR ---
 const navigateTo = (targetId) => {
   state.currentSection = targetId;
   $$(".content-section").forEach((s) => (s.style.display = "none"));
@@ -585,15 +611,38 @@ const navigateTo = (targetId) => {
 
   // Atualizar menu ativo
   $$(".nav-item").forEach((n) => n.classList.remove("active"));
-  const navItem = document.querySelector(`[data-target="${targetId}"]`);
+
+  // Correção para garantir que o menu Dashboard fique ativo mesmo se clicado pelo logo
+  const navItem = document.querySelector(
+    `.nav-item[data-target="${targetId}"]`
+  );
   if (navItem) navItem.classList.add("active");
+
+  // Se estiver no mobile, fecha a sidebar ao navegar
+  if (window.innerWidth <= 768) {
+    closeSidebar();
+  }
 
   renderCurrentSection();
 };
 
+// Toggle Sidebar Mobile
+const openSidebar = () => {
+  $("#sidebar").classList.add("active");
+  $("#sidebar-overlay").classList.add("active");
+};
+
+const closeSidebar = () => {
+  $("#sidebar").classList.remove("active");
+  $("#sidebar-overlay").classList.remove("active");
+};
+
+$("#menu-toggle").addEventListener("click", openSidebar);
+$("#close-sidebar").addEventListener("click", closeSidebar);
+$("#sidebar-overlay").addEventListener("click", closeSidebar);
+
 // Listeners Navegação
 $$("[data-target]").forEach((el) => {
-  // Ignora se for apenas o header do submenu (que tem logica propria)
   if (!el.classList.contains("collapsible")) {
     el.addEventListener("click", (e) => {
       e.preventDefault();

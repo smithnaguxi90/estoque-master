@@ -14,12 +14,16 @@
   </head>
   <body>
     <div class="app-container">
+      <!-- Overlay para fechar menu no mobile -->
+      <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
       <!-- SIDEBAR -->
       <aside id="sidebar">
         <div class="logo">
-          <a href="#" data-target="dashboard" class="logo-link">
+          <a href="#" data-target="dashboard" class="logo-link active">
             <h1>Estoque<span class="danger">Master</span></h1>
           </a>
+          <i class="fa fa-times close-sidebar-btn" id="close-sidebar"></i>
         </div>
         <nav class="nav-menu">
           <a href="#" class="nav-item active" data-target="dashboard">
@@ -80,6 +84,14 @@
 
       <!-- CONTEÚDO -->
       <main>
+        <!-- HEADER MOBILE -->
+        <header class="mobile-header">
+          <button id="menu-toggle" class="menu-btn">
+            <i class="fa fa-bars"></i>
+          </button>
+          <h2>EstoqueMaster</h2>
+        </header>
+
         <!-- 1. DASHBOARD -->
         <section id="dashboard" class="content-section fade-in">
           <h2 class="section-title">Dashboard</h2>
@@ -125,16 +137,17 @@
                 <div id="form-image-preview" class="img-preview">
                   <i class="fa fa-image fa-2x"></i>
                 </div>
-                <div>
+                <div style="flex: 1">
                   <label
                     for="material-image"
+                    class="btn btn-secondary btn-sm"
                     style="
                       cursor: pointer;
-                      color: var(--color-primary);
-                      font-weight: 600;
+                      display: inline-block;
+                      margin-bottom: 5px;
                     "
                   >
-                    Escolher Imagem
+                    <i class="fa fa-upload"></i> Escolher Imagem
                   </label>
                   <input
                     type="file"
@@ -142,8 +155,8 @@
                     accept="image/*"
                     style="display: none"
                   />
-                  <small style="display: block; color: #666"
-                    >Max 200KB (redimensionamento auto)</small
+                  <small style="display: block; color: #666; font-size: 0.8rem"
+                    >Max 200KB</small
                   >
                 </div>
               </div>
@@ -210,7 +223,7 @@
                 <textarea id="material-description" rows="3"></textarea>
               </div>
 
-              <div style="display: flex; gap: 10px; margin-top: 1rem">
+              <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
                   Salvar Material
                 </button>
@@ -249,7 +262,14 @@
               </div>
             </div>
             <div class="form-group">
-              <label style="display: flex; align-items: center; gap: 5px">
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 5px;
+                  cursor: pointer;
+                "
+              >
                 <input
                   type="checkbox"
                   id="search-show-archived"
@@ -324,38 +344,22 @@
               </div>
               <div class="form-group">
                 <label>Tipo de Movimentação</label>
-                <div style="display: flex; gap: 15px; margin-top: 5px">
-                  <label
-                    style="
-                      font-weight: 500;
-                      display: flex;
-                      align-items: center;
-                      gap: 5px;
-                    "
-                  >
+                <div class="radio-group">
+                  <label class="radio-label">
                     <input
                       type="radio"
                       name="movement-type"
                       value="entrada"
                       required
-                      style="width: auto"
                     />
                     Entrada
                   </label>
-                  <label
-                    style="
-                      font-weight: 500;
-                      display: flex;
-                      align-items: center;
-                      gap: 5px;
-                    "
-                  >
+                  <label class="radio-label">
                     <input
                       type="radio"
                       name="movement-type"
                       value="saida"
                       required
-                      style="width: auto"
                     />
                     Saída
                   </label>
@@ -374,7 +378,7 @@
                   required
                 ></textarea>
               </div>
-              <button type="submit" class="btn btn-primary">
+              <button type="submit" class="btn btn-primary width-full-mobile">
                 Registrar Movimentação
               </button>
             </form>
@@ -467,12 +471,14 @@
               Adicione ou remova categorias do sistema.
             </p>
             <div id="settings-category-list" class="category-list"></div>
-            <div style="display: flex; gap: 5px; margin-top: 10px">
+            <div
+              style="display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap"
+            >
               <input
                 type="text"
                 id="new-category-input"
                 placeholder="Nova categoria..."
-                style="max-width: 200px"
+                style="flex: 1; min-width: 200px"
               />
               <button id="add-category-btn" class="btn btn-primary">
                 Adicionar
