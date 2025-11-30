@@ -804,11 +804,6 @@ textarea:focus {
   color: var(--color-text-muted);
 }
 
-/* Admin Only Visibility Helper */
-.admin-only {
-  /* Por padrão mostra, o JS vai esconder se for standard */
-}
-
 /* === RESPONSIVO === */
 @media (max-width: 1024px) {
   .app-container {
